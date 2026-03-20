@@ -1,0 +1,52 @@
+service: task-processing-service
+
+frameworkVersion: '4'
+useDotenv: true
+
+custom:
+  stage: ${opt:stage, env:STAGE, 'dev'}
+  region: ${opt:region, env:AWS_REGION, 'ap-south-1'}
+  infraStackName: todo-management-infra-${self:custom.stage}
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${self:custom.stage}
+  region: ${self:custom.region}
+  environment:
+    LOG_LEVEL: ${env:LOG_LEVEL, 'INFO'}
+    PROCESSING_DELAY_MS: ${env:PROCESSING_DELAY_MS, '2000'}
+    TODOS_TABLE: ${cf:${self:custom.infraStackName}.TodosTableName}
+    TODO_EVENT_BUS_NAME: ${cf:${self:custom.infraStackName}.TodoEventBusName}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${cf:${self:custom.infraStackName}.TodosTableName}
+
+        - Effect: Allow
+          Action:
+            - events:PutEvents
+          Resource:
+            - ${cf:${self:custom.infraStackName}.TodoEventBusArn}
+
+        - Effect: Allow
+          Action:
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - ${cf:${self:custom.infraStackName}.TaskQueueArn}
+
+functions:
+  processTodo:
+    handler: src/handlers/processTodo.handler
+    timeout: 5
+    events:
+      - sqs:
+          arn: ${cf:${self:custom.infraStackName}.TaskQueueArn}
+          batchSize: 5

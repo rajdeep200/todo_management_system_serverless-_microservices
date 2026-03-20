@@ -1,0 +1,41 @@
+service: notification-service
+
+frameworkVersion: '4'
+
+custom:
+  stage: ${opt:stage, env:STAGE, 'dev'}
+  region: ${opt:region, env:AWS_REGION, 'ap-south-1'}
+  infraStackName: todo-management-infra-${self:custom.stage}
+  todoEventBusArn: ${cf:${self:custom.infraStackName}.TodoEventBusArn}
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${self:custom.stage}
+  region: ${self:custom.region}
+  environment:
+    LOG_LEVEL: ${env:LOG_LEVEL, 'INFO'}
+
+functions:
+  notifyTodoCreated:
+    handler: src/handlers/notifyTodoCreated.handler
+    events:
+      - eventBridge:
+          eventBus: ${self:custom.todoEventBusArn}
+          pattern:
+            source:
+              - todo-service
+            detail-type:
+              - todo.created
+
+  notifyTodoCompleted:
+    handler: src/handlers/notifyTodoCompleted.handler
+    events:
+      - eventBridge:
+          eventBus: ${self:custom.todoEventBusArn}
+          pattern:
+            source:
+              - todo-service
+              - task-processing-service
+            detail-type:
+              - todo.completed

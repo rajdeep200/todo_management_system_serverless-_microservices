@@ -1,0 +1,23 @@
+{
+  "name": "todo-service",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "deploy": "serverless deploy",
+    "remove": "serverless remove"
+  },
+  "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.772.0",
+    "@aws-sdk/lib-dynamodb": "^3.772.0",
+    "@aws-sdk/client-dynamodb": "^3.772.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.147",
+    "@types/node": "^22.13.13",
+    "serverless": "^4.14.3",
+    "serverless-esbuild": "^1.55.1",
+    "typescript": "^5.8.2"
+  }
+}

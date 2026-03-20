@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/handlers/notifyTodoCreated.ts", "../../../../src/utils/logger.ts"],
+  "sourcesContent": ["import type { EventBridgeEvent } from 'aws-lambda';\nimport type { TodoCreatedDetail } from '../types/events';\nimport { logger } from '../utils/logger';\n\nexport const handler = async (event: EventBridgeEvent<'todo.created', TodoCreatedDetail>): Promise<void> => {\n  logger.info('Notification triggered for todo creation', {\n    todoId: event.detail.todoId,\n    title: event.detail.title,\n    createdAt: event.detail.createdAt,\n    source: event.source\n  });\n};\n", "export const logger = {\n  info: (message: string, meta?: unknown) => {\n    console.log(JSON.stringify({ level: 'INFO', message, meta }));\n  },\n  error: (message: string, meta?: unknown) => {\n    console.error(JSON.stringify({ level: 'ERROR', message, meta }));\n  }\n};\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;;;ACAO,IAAM,SAAS;AAAA,EACpB,MAAM,CAAC,SAAiB,SAAmB;AACzC,YAAQ,IAAI,KAAK,UAAU,EAAE,OAAO,QAAQ,SAAS,KAAK,CAAC,CAAC;AAAA,EAC9D;AAAA,EACA,OAAO,CAAC,SAAiB,SAAmB;AAC1C,YAAQ,MAAM,KAAK,UAAU,EAAE,OAAO,SAAS,SAAS,KAAK,CAAC,CAAC;AAAA,EACjE;AACF;;;ADHO,IAAM,UAAU,OAAO,UAA8E;AAC1G,SAAO,KAAK,4CAA4C;AAAA,IACtD,QAAQ,MAAM,OAAO;AAAA,IACrB,OAAO,MAAM,OAAO;AAAA,IACpB,WAAW,MAAM,OAAO;AAAA,IACxB,QAAQ,MAAM;AAAA,EAChB,CAAC;AACH;",
+  "names": []
+}

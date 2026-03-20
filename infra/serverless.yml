@@ -1,0 +1,107 @@
+service: todo-management-infra
+
+frameworkVersion: '4'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${self:custom.stage}
+  region: ${self:custom.region}
+
+custom:
+  stage: ${opt:stage, env:STAGE, 'dev'}
+  region: ${opt:region, env:AWS_REGION, 'ap-south-1'}
+
+resources:
+  Resources:
+    TodoEventBus:
+      Type: AWS::Events::EventBus
+      Properties:
+        Name: ${self:service}-${sls:stage}-event-bus
+
+    TodosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-${sls:stage}-todos
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+
+    TaskQueueDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${sls:stage}-task-dlq
+
+    TaskQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${sls:stage}-task-queue
+        VisibilityTimeout: 30
+        RedrivePolicy:
+          deadLetterTargetArn: !GetAtt TaskQueueDLQ.Arn
+          maxReceiveCount: 3
+
+    TaskQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - !Ref TaskQueue
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Sid: AllowEventBridgeToSendMessage
+              Effect: Allow
+              Principal:
+                Service: events.amazonaws.com
+              Action: sqs:SendMessage
+              Resource: !GetAtt TaskQueue.Arn
+
+    TodoCreatedToSqsRule:
+      Type: AWS::Events::Rule
+      Properties:
+        Name: ${self:service}-${sls:stage}-todo-created-to-sqs
+        EventBusName: !Ref TodoEventBus
+        EventPattern:
+          source:
+            - todo-service
+          detail-type:
+            - todo.created
+        Targets:
+          - Arn: !GetAtt TaskQueue.Arn
+            Id: taskQueueTarget
+
+  Outputs:
+    TodosTableName:
+      Value: !Ref TodosTable
+      Export:
+        Name: ${self:service}-${sls:stage}-TodosTableName
+
+    TodoEventBusName:
+      Value: !Ref TodoEventBus
+      Export:
+        Name: ${self:service}-${sls:stage}-TodoEventBusName
+
+    TodoEventBusArn:
+      Value: !GetAtt TodoEventBus.Arn
+      Export:
+        Name: ${self:service}-${sls:stage}-TodoEventBusArn
+
+    TaskQueueArn:
+      Value: !GetAtt TaskQueue.Arn
+      Export:
+        Name: ${self:service}-${sls:stage}-TaskQueueArn
+
+    TaskQueueUrl:
+      Value: !Ref TaskQueue
+      Export:
+        Name: ${self:service}-${sls:stage}-TaskQueueUrl
+
+    TaskQueueDLQArn:
+      Value: !GetAtt TaskQueueDLQ.Arn
+      Export:
+        Name: ${self:service}-${sls:stage}-TaskQueueDLQArn

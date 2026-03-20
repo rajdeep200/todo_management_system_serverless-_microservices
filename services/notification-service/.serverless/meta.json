@@ -1,0 +1,1152 @@
+{
+  "C:\\Users\\syste\\OneDrive\\ドキュメント\\Projects\\NodeJS\\todo-serverless-microservices\\todo-serverless-microservices\\services\\notification-service\\serverless.yml": {
+    "versionFramework": "4.33.0",
+    "servicePath": "C:\\Users\\syste\\OneDrive\\ドキュメント\\Projects\\NodeJS\\todo-serverless-microservices\\todo-serverless-microservices\\services\\notification-service\\serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "notification-service",
+      "frameworkVersion": "4",
+      "custom": {
+        "stage": "dev",
+        "region": "ap-south-1",
+        "infraStackName": "todo-management-infra-dev",
+        "todoEventBusArn": "arn:aws:events:ap-south-1:351740701752:event-bus/todo-management-infra-dev-event-bus"
+      },
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs20.x",
+        "stage": "dev",
+        "region": "ap-south-1",
+        "environment": {
+          "LOG_LEVEL": "INFO"
+        },
+        "versionFunctions": true,
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "NotifyTodoCreatedLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/notification-service-dev-notifyTodoCreated"
+              }
+            },
+            "NotifyTodoCompletedLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/notification-service-dev-notifyTodoCompleted"
+              }
+            },
+            "IamRoleLambdaExecution": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": [
+                          "lambda.amazonaws.com"
+                        ]
+                      },
+                      "Action": [
+                        "sts:AssumeRole"
+                      ]
+                    }
+                  ]
+                },
+                "Policies": [
+                  {
+                    "PolicyName": {
+                      "Fn::Join": [
+                        "-",
+                        [
+                          "notification-service",
+                          "dev",
+                          "lambda"
+                        ]
+                      ]
+                    },
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogStream",
+                            "logs:CreateLogGroup",
+                            "logs:TagResource"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/notification-service-dev*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/notification-service-dev*:*:*"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "Path": "/",
+                "RoleName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "notification-service",
+                      "dev",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "lambdaRole"
+                    ]
+                  ]
+                }
+              }
+            },
+            "NotifyTodoCreatedLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+                  "S3Key": "serverless/notification-service/dev/1773998371236-2026-03-20T09:19:31.236Z/notification-service.zip"
+                },
+                "Handler": "src/handlers/notifyTodoCreated.handler",
+                "Runtime": "nodejs20.x",
+                "FunctionName": "notification-service-dev-notifyTodoCreated",
+                "MemorySize": 1024,
+                "Timeout": 6,
+                "Environment": {
+                  "Variables": {
+                    "LOG_LEVEL": "INFO",
+                    "NODE_OPTIONS": "--enable-source-maps"
+                  }
+                },
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "NotifyTodoCreatedLogGroup"
+              ]
+            },
+            "NotifyTodoCompletedLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+                  "S3Key": "serverless/notification-service/dev/1773998371236-2026-03-20T09:19:31.236Z/notification-service.zip"
+                },
+                "Handler": "src/handlers/notifyTodoCompleted.handler",
+                "Runtime": "nodejs20.x",
+                "FunctionName": "notification-service-dev-notifyTodoCompleted",
+                "MemorySize": 1024,
+                "Timeout": 6,
+                "Environment": {
+                  "Variables": {
+                    "LOG_LEVEL": "INFO",
+                    "NODE_OPTIONS": "--enable-source-maps"
+                  }
+                },
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "NotifyTodoCompletedLogGroup"
+              ]
+            },
+            "NotifyTodoCreatedLambdaVersionoFRWDlgJsUNdi2IZpC9pSGbBd7L8pRNJSTTwLbbM": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "NotifyTodoCreatedLambdaFunction"
+                },
+                "CodeSha256": "atMUUGrONIg0DdVBwq+dpaBNC6b1p0MO0C5Dd+eyVMM="
+              }
+            },
+            "NotifyTodoCompletedLambdaVersionxIBO66KPUGFQ9pCBQYXqTxZGZtmQd7RIS8TnlL1P8": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "NotifyTodoCompletedLambdaFunction"
+                },
+                "CodeSha256": "atMUUGrONIg0DdVBwq+dpaBNC6b1p0MO0C5Dd+eyVMM="
+              }
+            },
+            "NotificationservicedevnotifyTodoCreatedrule1EventBridgeRule": {
+              "Type": "AWS::Events::Rule",
+              "Properties": {
+                "EventBusName": "todo-management-infra-dev-event-bus",
+                "EventPattern": {
+                  "source": [
+                    "todo-service"
+                  ],
+                  "detail-type": [
+                    "todo.created"
+                  ]
+                },
+                "Name": "notification-service-dev-notifyTodoCreated-rule-1",
+                "State": "ENABLED",
+                "Targets": [
+                  {
+                    "Arn": {
+                      "Fn::GetAtt": [
+                        "NotifyTodoCreatedLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "Id": "notification-service-dev-notifyTodoCreated-rule-1-target"
+                  }
+                ]
+              }
+            },
+            "NotifyTodoCreatedEventBridgeLambdaPermission1": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                  "Fn::GetAtt": [
+                    "NotifyTodoCreatedLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Principal": "events.amazonaws.com",
+                "SourceArn": {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      "events",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      {
+                        "Fn::Join": [
+                          "/",
+                          [
+                            "rule",
+                            "todo-management-infra-dev-event-bus",
+                            "notification-service-dev-notifyTodoCreated-rule-1"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              }
+            },
+            "NotificationservicedevnotifyTodoCompletedrule1EventBridgeRule": {
+              "Type": "AWS::Events::Rule",
+              "Properties": {
+                "EventBusName": "todo-management-infra-dev-event-bus",
+                "EventPattern": {
+                  "source": [
+                    "todo-service",
+                    "task-processing-service"
+                  ],
+                  "detail-type": [
+                    "todo.completed"
+                  ]
+                },
+                "Name": "notification-service-dev-notifyTodoCompleted-rule-1",
+                "State": "ENABLED",
+                "Targets": [
+                  {
+                    "Arn": {
+                      "Fn::GetAtt": [
+                        "NotifyTodoCompletedLambdaFunction",
+                        "Arn"
+                      ]
+                    },
+                    "Id": "notification-service-dev-notifyTodoCompleted-rule-1-target"
+                  }
+                ]
+              }
+            },
+            "NotifyTodoCompletedEventBridgeLambdaPermission1": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "FunctionName": {
+                  "Fn::GetAtt": [
+                    "NotifyTodoCompletedLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Principal": "events.amazonaws.com",
+                "SourceArn": {
+                  "Fn::Join": [
+                    ":",
+                    [
+                      "arn",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      "events",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      {
+                        "Fn::Join": [
+                          "/",
+                          [
+                            "rule",
+                            "todo-management-infra-dev-event-bus",
+                            "notification-service-dev-notifyTodoCompleted-rule-1"
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+              "Export": {
+                "Name": "sls-notification-service-dev-ServerlessDeploymentBucketName"
+              }
+            },
+            "NotifyTodoCreatedLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "NotifyTodoCreatedLambdaVersionoFRWDlgJsUNdi2IZpC9pSGbBd7L8pRNJSTTwLbbM"
+              },
+              "Export": {
+                "Name": "sls-notification-service-dev-NotifyTodoCreatedLambdaFunctionQualifiedArn"
+              }
+            },
+            "NotifyTodoCompletedLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "NotifyTodoCompletedLambdaVersionxIBO66KPUGFQ9pCBQYXqTxZGZtmQd7RIS8TnlL1P8"
+              },
+              "Export": {
+                "Name": "sls-notification-service-dev-NotifyTodoCompletedLambdaFunctionQualifiedArn"
+              }
+            }
+          }
+        },
+        "vpc": {}
+      },
+      "functions": {
+        "notifyTodoCreated": {
+          "handler": "src/handlers/notifyTodoCreated.handler",
+          "events": [
+            {
+              "eventBridge": {
+                "eventBus": "arn:aws:events:ap-south-1:351740701752:event-bus/todo-management-infra-dev-event-bus",
+                "pattern": {
+                  "source": [
+                    "todo-service"
+                  ],
+                  "detail-type": [
+                    "todo.created"
+                  ]
+                }
+              }
+            }
+          ],
+          "name": "notification-service-dev-notifyTodoCreated",
+          "environment": {
+            "NODE_OPTIONS": "--enable-source-maps"
+          },
+          "package": {},
+          "memory": 1024,
+          "timeout": 6,
+          "runtime": "nodejs20.x",
+          "vpc": {},
+          "versionLogicalId": "NotifyTodoCreatedLambdaVersionoFRWDlgJsUNdi2IZpC9pSGbBd7L8pRNJSTTwLbbM"
+        },
+        "notifyTodoCompleted": {
+          "handler": "src/handlers/notifyTodoCompleted.handler",
+          "events": [
+            {
+              "eventBridge": {
+                "eventBus": "arn:aws:events:ap-south-1:351740701752:event-bus/todo-management-infra-dev-event-bus",
+                "pattern": {
+                  "source": [
+                    "todo-service",
+                    "task-processing-service"
+                  ],
+                  "detail-type": [
+                    "todo.completed"
+                  ]
+                }
+              }
+            }
+          ],
+          "name": "notification-service-dev-notifyTodoCompleted",
+          "environment": {
+            "NODE_OPTIONS": "--enable-source-maps"
+          },
+          "package": {},
+          "memory": 1024,
+          "timeout": 6,
+          "runtime": "nodejs20.x",
+          "vpc": {},
+          "versionLogicalId": "NotifyTodoCompletedLambdaVersionxIBO66KPUGFQ9pCBQYXqTxZGZtmQd7RIS8TnlL1P8"
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs20.x",
+      "stage": "dev",
+      "region": "ap-south-1",
+      "environment": {
+        "LOG_LEVEL": "INFO"
+      },
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "NotifyTodoCreatedLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/notification-service-dev-notifyTodoCreated"
+            }
+          },
+          "NotifyTodoCompletedLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/notification-service-dev-notifyTodoCompleted"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "notification-service",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/notification-service-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/notification-service-dev*:*:*"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "notification-service",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "NotifyTodoCreatedLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+                "S3Key": "serverless/notification-service/dev/1773998371236-2026-03-20T09:19:31.236Z/notification-service.zip"
+              },
+              "Handler": "src/handlers/notifyTodoCreated.handler",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "notification-service-dev-notifyTodoCreated",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "LOG_LEVEL": "INFO",
+                  "NODE_OPTIONS": "--enable-source-maps"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "NotifyTodoCreatedLogGroup"
+            ]
+          },
+          "NotifyTodoCompletedLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+                "S3Key": "serverless/notification-service/dev/1773998371236-2026-03-20T09:19:31.236Z/notification-service.zip"
+              },
+              "Handler": "src/handlers/notifyTodoCompleted.handler",
+              "Runtime": "nodejs20.x",
+              "FunctionName": "notification-service-dev-notifyTodoCompleted",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Environment": {
+                "Variables": {
+                  "LOG_LEVEL": "INFO",
+                  "NODE_OPTIONS": "--enable-source-maps"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "NotifyTodoCompletedLogGroup"
+            ]
+          },
+          "NotifyTodoCreatedLambdaVersionoFRWDlgJsUNdi2IZpC9pSGbBd7L8pRNJSTTwLbbM": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "NotifyTodoCreatedLambdaFunction"
+              },
+              "CodeSha256": "atMUUGrONIg0DdVBwq+dpaBNC6b1p0MO0C5Dd+eyVMM="
+            }
+          },
+          "NotifyTodoCompletedLambdaVersionxIBO66KPUGFQ9pCBQYXqTxZGZtmQd7RIS8TnlL1P8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "NotifyTodoCompletedLambdaFunction"
+              },
+              "CodeSha256": "atMUUGrONIg0DdVBwq+dpaBNC6b1p0MO0C5Dd+eyVMM="
+            }
+          },
+          "NotificationservicedevnotifyTodoCreatedrule1EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+              "EventBusName": "todo-management-infra-dev-event-bus",
+              "EventPattern": {
+                "source": [
+                  "todo-service"
+                ],
+                "detail-type": [
+                  "todo.created"
+                ]
+              },
+              "Name": "notification-service-dev-notifyTodoCreated-rule-1",
+              "State": "ENABLED",
+              "Targets": [
+                {
+                  "Arn": {
+                    "Fn::GetAtt": [
+                      "NotifyTodoCreatedLambdaFunction",
+                      "Arn"
+                    ]
+                  },
+                  "Id": "notification-service-dev-notifyTodoCreated-rule-1-target"
+                }
+              ]
+            }
+          },
+          "NotifyTodoCreatedEventBridgeLambdaPermission1": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "NotifyTodoCreatedLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Principal": "events.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  ":",
+                  [
+                    "arn",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    "events",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    {
+                      "Fn::Join": [
+                        "/",
+                        [
+                          "rule",
+                          "todo-management-infra-dev-event-bus",
+                          "notification-service-dev-notifyTodoCreated-rule-1"
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          "NotificationservicedevnotifyTodoCompletedrule1EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+              "EventBusName": "todo-management-infra-dev-event-bus",
+              "EventPattern": {
+                "source": [
+                  "todo-service",
+                  "task-processing-service"
+                ],
+                "detail-type": [
+                  "todo.completed"
+                ]
+              },
+              "Name": "notification-service-dev-notifyTodoCompleted-rule-1",
+              "State": "ENABLED",
+              "Targets": [
+                {
+                  "Arn": {
+                    "Fn::GetAtt": [
+                      "NotifyTodoCompletedLambdaFunction",
+                      "Arn"
+                    ]
+                  },
+                  "Id": "notification-service-dev-notifyTodoCompleted-rule-1-target"
+                }
+              ]
+            }
+          },
+          "NotifyTodoCompletedEventBridgeLambdaPermission1": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "NotifyTodoCompletedLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Principal": "events.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  ":",
+                  [
+                    "arn",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    "events",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    {
+                      "Fn::Join": [
+                        "/",
+                        [
+                          "rule",
+                          "todo-management-infra-dev-event-bus",
+                          "notification-service-dev-notifyTodoCompleted-rule-1"
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+            "Export": {
+              "Name": "sls-notification-service-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "NotifyTodoCreatedLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "NotifyTodoCreatedLambdaVersionoFRWDlgJsUNdi2IZpC9pSGbBd7L8pRNJSTTwLbbM"
+            },
+            "Export": {
+              "Name": "sls-notification-service-dev-NotifyTodoCreatedLambdaFunctionQualifiedArn"
+            }
+          },
+          "NotifyTodoCompletedLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "NotifyTodoCompletedLambdaVersionxIBO66KPUGFQ9pCBQYXqTxZGZtmQd7RIS8TnlL1P8"
+            },
+            "Export": {
+              "Name": "sls-notification-service-dev-NotifyTodoCompletedLambdaFunctionQualifiedArn"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "serviceRawFile": "service: notification-service\n\nframeworkVersion: '4'\n\ncustom:\n  stage: ${opt:stage, env:STAGE, 'dev'}\n  region: ${opt:region, env:AWS_REGION, 'ap-south-1'}\n  infraStackName: todo-management-infra-${self:custom.stage}\n  todoEventBusArn: ${cf:${self:custom.infraStackName}.TodoEventBusArn}\n\nprovider:\n  name: aws\n  runtime: nodejs20.x\n  stage: ${self:custom.stage}\n  region: ${self:custom.region}\n  environment:\n    LOG_LEVEL: ${env:LOG_LEVEL, 'INFO'}\n\nfunctions:\n  notifyTodoCreated:\n    handler: src/handlers/notifyTodoCreated.handler\n    events:\n      - eventBridge:\n          eventBus: ${self:custom.todoEventBusArn}\n          pattern:\n            source:\n              - todo-service\n            detail-type:\n              - todo.created\n\n  notifyTodoCompleted:\n    handler: src/handlers/notifyTodoCompleted.handler\n    events:\n      - eventBridge:\n          eventBus: ${self:custom.todoEventBusArn}\n          pattern:\n            source:\n              - todo-service\n              - task-processing-service\n            detail-type:\n              - todo.completed",
+    "command": [
+      "deploy"
+    ],
+    "options": {},
+    "orgId": "9551f44f-b751-41e7-901a-fd3972571ddc",
+    "orgName": "rajdeep2000",
+    "userId": "n4FvSdpJjgKF3C2063",
+    "userName": "rajdeep2000",
+    "serviceProviderAwsAccountId": "351740701752",
+    "serviceProviderAwsCfStackName": "notification-service-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:ap-south-1:351740701752:stack/notification-service-dev/e9397d60-243d-11f1-8618-0ae957835909",
+    "serviceProviderAwsCfStackCreated": "2026-03-20T09:19:35.046Z",
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "NotifyTodoCreatedLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:ap-south-1:351740701752:function:notification-service-dev-notifyTodoCreated:1",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-notification-service-dev-NotifyTodoCreatedLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "NotifyTodoCompletedLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:ap-south-1:351740701752:function:notification-service-dev-notifyTodoCompleted:1",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-notification-service-dev-NotifyTodoCompletedLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+        "ExportName": "sls-notification-service-dev-ServerlessDeploymentBucketName"
+      }
+    ],
+    "compiledCloudFormationTemplate": {
+      "AWSTemplateFormatVersion": "2010-09-09",
+      "Description": "The AWS CloudFormation template for this Serverless application",
+      "Resources": {
+        "NotifyTodoCreatedLogGroup": {
+          "Type": "AWS::Logs::LogGroup",
+          "Properties": {
+            "LogGroupName": "/aws/lambda/notification-service-dev-notifyTodoCreated"
+          }
+        },
+        "NotifyTodoCompletedLogGroup": {
+          "Type": "AWS::Logs::LogGroup",
+          "Properties": {
+            "LogGroupName": "/aws/lambda/notification-service-dev-notifyTodoCompleted"
+          }
+        },
+        "IamRoleLambdaExecution": {
+          "Type": "AWS::IAM::Role",
+          "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": [
+                      "lambda.amazonaws.com"
+                    ]
+                  },
+                  "Action": [
+                    "sts:AssumeRole"
+                  ]
+                }
+              ]
+            },
+            "Policies": [
+              {
+                "PolicyName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "notification-service",
+                      "dev",
+                      "lambda"
+                    ]
+                  ]
+                },
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:CreateLogStream",
+                        "logs:CreateLogGroup",
+                        "logs:TagResource"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/notification-service-dev*:*"
+                        }
+                      ]
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "logs:PutLogEvents"
+                      ],
+                      "Resource": [
+                        {
+                          "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/notification-service-dev*:*:*"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "Path": "/",
+            "RoleName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "notification-service",
+                  "dev",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  "lambdaRole"
+                ]
+              ]
+            }
+          }
+        },
+        "NotifyTodoCreatedLambdaFunction": {
+          "Type": "AWS::Lambda::Function",
+          "Properties": {
+            "Code": {
+              "S3Bucket": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+              "S3Key": "serverless/notification-service/dev/1773998371236-2026-03-20T09:19:31.236Z/notification-service.zip"
+            },
+            "Handler": "src/handlers/notifyTodoCreated.handler",
+            "Runtime": "nodejs20.x",
+            "FunctionName": "notification-service-dev-notifyTodoCreated",
+            "MemorySize": 1024,
+            "Timeout": 6,
+            "Environment": {
+              "Variables": {
+                "LOG_LEVEL": "INFO",
+                "NODE_OPTIONS": "--enable-source-maps"
+              }
+            },
+            "Role": {
+              "Fn::GetAtt": [
+                "IamRoleLambdaExecution",
+                "Arn"
+              ]
+            }
+          },
+          "DependsOn": [
+            "NotifyTodoCreatedLogGroup"
+          ]
+        },
+        "NotifyTodoCompletedLambdaFunction": {
+          "Type": "AWS::Lambda::Function",
+          "Properties": {
+            "Code": {
+              "S3Bucket": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+              "S3Key": "serverless/notification-service/dev/1773998371236-2026-03-20T09:19:31.236Z/notification-service.zip"
+            },
+            "Handler": "src/handlers/notifyTodoCompleted.handler",
+            "Runtime": "nodejs20.x",
+            "FunctionName": "notification-service-dev-notifyTodoCompleted",
+            "MemorySize": 1024,
+            "Timeout": 6,
+            "Environment": {
+              "Variables": {
+                "LOG_LEVEL": "INFO",
+                "NODE_OPTIONS": "--enable-source-maps"
+              }
+            },
+            "Role": {
+              "Fn::GetAtt": [
+                "IamRoleLambdaExecution",
+                "Arn"
+              ]
+            }
+          },
+          "DependsOn": [
+            "NotifyTodoCompletedLogGroup"
+          ]
+        },
+        "NotifyTodoCreatedLambdaVersionoFRWDlgJsUNdi2IZpC9pSGbBd7L8pRNJSTTwLbbM": {
+          "Type": "AWS::Lambda::Version",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "FunctionName": {
+              "Ref": "NotifyTodoCreatedLambdaFunction"
+            },
+            "CodeSha256": "atMUUGrONIg0DdVBwq+dpaBNC6b1p0MO0C5Dd+eyVMM="
+          }
+        },
+        "NotifyTodoCompletedLambdaVersionxIBO66KPUGFQ9pCBQYXqTxZGZtmQd7RIS8TnlL1P8": {
+          "Type": "AWS::Lambda::Version",
+          "DeletionPolicy": "Retain",
+          "Properties": {
+            "FunctionName": {
+              "Ref": "NotifyTodoCompletedLambdaFunction"
+            },
+            "CodeSha256": "atMUUGrONIg0DdVBwq+dpaBNC6b1p0MO0C5Dd+eyVMM="
+          }
+        },
+        "NotificationservicedevnotifyTodoCreatedrule1EventBridgeRule": {
+          "Type": "AWS::Events::Rule",
+          "Properties": {
+            "EventBusName": "todo-management-infra-dev-event-bus",
+            "EventPattern": {
+              "source": [
+                "todo-service"
+              ],
+              "detail-type": [
+                "todo.created"
+              ]
+            },
+            "Name": "notification-service-dev-notifyTodoCreated-rule-1",
+            "State": "ENABLED",
+            "Targets": [
+              {
+                "Arn": {
+                  "Fn::GetAtt": [
+                    "NotifyTodoCreatedLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Id": "notification-service-dev-notifyTodoCreated-rule-1-target"
+              }
+            ]
+          }
+        },
+        "NotifyTodoCreatedEventBridgeLambdaPermission1": {
+          "Type": "AWS::Lambda::Permission",
+          "Properties": {
+            "Action": "lambda:InvokeFunction",
+            "FunctionName": {
+              "Fn::GetAtt": [
+                "NotifyTodoCreatedLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Principal": "events.amazonaws.com",
+            "SourceArn": {
+              "Fn::Join": [
+                ":",
+                [
+                  "arn",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  "events",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  {
+                    "Fn::Join": [
+                      "/",
+                      [
+                        "rule",
+                        "todo-management-infra-dev-event-bus",
+                        "notification-service-dev-notifyTodoCreated-rule-1"
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            }
+          }
+        },
+        "NotificationservicedevnotifyTodoCompletedrule1EventBridgeRule": {
+          "Type": "AWS::Events::Rule",
+          "Properties": {
+            "EventBusName": "todo-management-infra-dev-event-bus",
+            "EventPattern": {
+              "source": [
+                "todo-service",
+                "task-processing-service"
+              ],
+              "detail-type": [
+                "todo.completed"
+              ]
+            },
+            "Name": "notification-service-dev-notifyTodoCompleted-rule-1",
+            "State": "ENABLED",
+            "Targets": [
+              {
+                "Arn": {
+                  "Fn::GetAtt": [
+                    "NotifyTodoCompletedLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Id": "notification-service-dev-notifyTodoCompleted-rule-1-target"
+              }
+            ]
+          }
+        },
+        "NotifyTodoCompletedEventBridgeLambdaPermission1": {
+          "Type": "AWS::Lambda::Permission",
+          "Properties": {
+            "Action": "lambda:InvokeFunction",
+            "FunctionName": {
+              "Fn::GetAtt": [
+                "NotifyTodoCompletedLambdaFunction",
+                "Arn"
+              ]
+            },
+            "Principal": "events.amazonaws.com",
+            "SourceArn": {
+              "Fn::Join": [
+                ":",
+                [
+                  "arn",
+                  {
+                    "Ref": "AWS::Partition"
+                  },
+                  "events",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  {
+                    "Ref": "AWS::AccountId"
+                  },
+                  {
+                    "Fn::Join": [
+                      "/",
+                      [
+                        "rule",
+                        "todo-management-infra-dev-event-bus",
+                        "notification-service-dev-notifyTodoCompleted-rule-1"
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "Outputs": {
+        "ServerlessDeploymentBucketName": {
+          "Value": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+          "Export": {
+            "Name": "sls-notification-service-dev-ServerlessDeploymentBucketName"
+          }
+        },
+        "NotifyTodoCreatedLambdaFunctionQualifiedArn": {
+          "Description": "Current Lambda function version",
+          "Value": {
+            "Ref": "NotifyTodoCreatedLambdaVersionoFRWDlgJsUNdi2IZpC9pSGbBd7L8pRNJSTTwLbbM"
+          },
+          "Export": {
+            "Name": "sls-notification-service-dev-NotifyTodoCreatedLambdaFunctionQualifiedArn"
+          }
+        },
+        "NotifyTodoCompletedLambdaFunctionQualifiedArn": {
+          "Description": "Current Lambda function version",
+          "Value": {
+            "Ref": "NotifyTodoCompletedLambdaVersionxIBO66KPUGFQ9pCBQYXqTxZGZtmQd7RIS8TnlL1P8"
+          },
+          "Export": {
+            "Name": "sls-notification-service-dev-NotifyTodoCompletedLambdaFunctionQualifiedArn"
+          }
+        }
+      }
+    }
+  }
+}

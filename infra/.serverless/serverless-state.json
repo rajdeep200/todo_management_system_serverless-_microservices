@@ -1,0 +1,386 @@
+{
+  "service": {
+    "service": "todo-management-infra",
+    "serviceObject": {
+      "name": "todo-management-infra"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs20.x",
+      "stage": "dev",
+      "region": "ap-south-1",
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "TodoEventBus": {
+            "Type": "AWS::Events::EventBus",
+            "Properties": {
+              "Name": "todo-management-infra-dev-event-bus"
+            }
+          },
+          "TodosTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "todo-management-infra-dev-todos",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "id",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "id",
+                  "KeyType": "HASH"
+                }
+              ]
+            }
+          },
+          "TaskQueueDLQ": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+              "QueueName": "todo-management-infra-dev-task-dlq"
+            }
+          },
+          "TaskQueue": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+              "QueueName": "todo-management-infra-dev-task-queue",
+              "VisibilityTimeout": 30,
+              "RedrivePolicy": {
+                "deadLetterTargetArn": {
+                  "Fn::GetAtt": [
+                    "TaskQueueDLQ",
+                    "Arn"
+                  ]
+                },
+                "maxReceiveCount": 3
+              }
+            }
+          },
+          "TaskQueuePolicy": {
+            "Type": "AWS::SQS::QueuePolicy",
+            "Properties": {
+              "Queues": [
+                {
+                  "Ref": "TaskQueue"
+                }
+              ],
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Sid": "AllowEventBridgeToSendMessage",
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": "events.amazonaws.com"
+                    },
+                    "Action": "sqs:SendMessage",
+                    "Resource": {
+                      "Fn::GetAtt": [
+                        "TaskQueue",
+                        "Arn"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "TodoCreatedToSqsRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+              "Name": "todo-management-infra-dev-todo-created-to-sqs",
+              "EventBusName": {
+                "Ref": "TodoEventBus"
+              },
+              "EventPattern": {
+                "source": [
+                  "todo-service"
+                ],
+                "detail-type": [
+                  "todo.created"
+                ]
+              },
+              "Targets": [
+                {
+                  "Arn": {
+                    "Fn::GetAtt": [
+                      "TaskQueue",
+                      "Arn"
+                    ]
+                  },
+                  "Id": "taskQueueTarget"
+                }
+              ]
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+            "Export": {
+              "Name": "sls-todo-management-infra-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "TodosTableName": {
+            "Value": {
+              "Ref": "TodosTable"
+            },
+            "Export": {
+              "Name": "todo-management-infra-dev-TodosTableName"
+            }
+          },
+          "TodoEventBusName": {
+            "Value": {
+              "Ref": "TodoEventBus"
+            },
+            "Export": {
+              "Name": "todo-management-infra-dev-TodoEventBusName"
+            }
+          },
+          "TodoEventBusArn": {
+            "Value": {
+              "Fn::GetAtt": [
+                "TodoEventBus",
+                "Arn"
+              ]
+            },
+            "Export": {
+              "Name": "todo-management-infra-dev-TodoEventBusArn"
+            }
+          },
+          "TaskQueueArn": {
+            "Value": {
+              "Fn::GetAtt": [
+                "TaskQueue",
+                "Arn"
+              ]
+            },
+            "Export": {
+              "Name": "todo-management-infra-dev-TaskQueueArn"
+            }
+          },
+          "TaskQueueUrl": {
+            "Value": {
+              "Ref": "TaskQueue"
+            },
+            "Export": {
+              "Name": "todo-management-infra-dev-TaskQueueUrl"
+            }
+          },
+          "TaskQueueDLQArn": {
+            "Value": {
+              "Fn::GetAtt": [
+                "TaskQueueDLQ",
+                "Arn"
+              ]
+            },
+            "Export": {
+              "Name": "todo-management-infra-dev-TaskQueueDLQArn"
+            }
+          }
+        }
+      }
+    },
+    "custom": {
+      "stage": "dev",
+      "region": "ap-south-1"
+    },
+    "pluginsData": {},
+    "functions": {},
+    "resources": {
+      "Resources": {
+        "TodoEventBus": {
+          "Type": "AWS::Events::EventBus",
+          "Properties": {
+            "Name": "todo-management-infra-dev-event-bus"
+          }
+        },
+        "TodosTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "todo-management-infra-dev-todos",
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "id",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "id",
+                "KeyType": "HASH"
+              }
+            ]
+          }
+        },
+        "TaskQueueDLQ": {
+          "Type": "AWS::SQS::Queue",
+          "Properties": {
+            "QueueName": "todo-management-infra-dev-task-dlq"
+          }
+        },
+        "TaskQueue": {
+          "Type": "AWS::SQS::Queue",
+          "Properties": {
+            "QueueName": "todo-management-infra-dev-task-queue",
+            "VisibilityTimeout": 30,
+            "RedrivePolicy": {
+              "deadLetterTargetArn": {
+                "Fn::GetAtt": [
+                  "TaskQueueDLQ",
+                  "Arn"
+                ]
+              },
+              "maxReceiveCount": 3
+            }
+          }
+        },
+        "TaskQueuePolicy": {
+          "Type": "AWS::SQS::QueuePolicy",
+          "Properties": {
+            "Queues": [
+              {
+                "Ref": "TaskQueue"
+              }
+            ],
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "AllowEventBridgeToSendMessage",
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": "events.amazonaws.com"
+                  },
+                  "Action": "sqs:SendMessage",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "TaskQueue",
+                      "Arn"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "TodoCreatedToSqsRule": {
+          "Type": "AWS::Events::Rule",
+          "Properties": {
+            "Name": "todo-management-infra-dev-todo-created-to-sqs",
+            "EventBusName": {
+              "Ref": "TodoEventBus"
+            },
+            "EventPattern": {
+              "source": [
+                "todo-service"
+              ],
+              "detail-type": [
+                "todo.created"
+              ]
+            },
+            "Targets": [
+              {
+                "Arn": {
+                  "Fn::GetAtt": [
+                    "TaskQueue",
+                    "Arn"
+                  ]
+                },
+                "Id": "taskQueueTarget"
+              }
+            ]
+          }
+        }
+      },
+      "Outputs": {
+        "TodosTableName": {
+          "Value": {
+            "Ref": "TodosTable"
+          },
+          "Export": {
+            "Name": "todo-management-infra-dev-TodosTableName"
+          }
+        },
+        "TodoEventBusName": {
+          "Value": {
+            "Ref": "TodoEventBus"
+          },
+          "Export": {
+            "Name": "todo-management-infra-dev-TodoEventBusName"
+          }
+        },
+        "TodoEventBusArn": {
+          "Value": {
+            "Fn::GetAtt": [
+              "TodoEventBus",
+              "Arn"
+            ]
+          },
+          "Export": {
+            "Name": "todo-management-infra-dev-TodoEventBusArn"
+          }
+        },
+        "TaskQueueArn": {
+          "Value": {
+            "Fn::GetAtt": [
+              "TaskQueue",
+              "Arn"
+            ]
+          },
+          "Export": {
+            "Name": "todo-management-infra-dev-TaskQueueArn"
+          }
+        },
+        "TaskQueueUrl": {
+          "Value": {
+            "Ref": "TaskQueue"
+          },
+          "Export": {
+            "Name": "todo-management-infra-dev-TaskQueueUrl"
+          }
+        },
+        "TaskQueueDLQArn": {
+          "Value": {
+            "Fn::GetAtt": [
+              "TaskQueueDLQ",
+              "Arn"
+            ]
+          },
+          "Export": {
+            "Name": "todo-management-infra-dev-TaskQueueDLQArn"
+          }
+        }
+      }
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless",
+    "initialServerlessConfig": {
+      "service": "todo-management-infra",
+      "frameworkVersion": "4",
+      "useDotenv": true,
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      }
+    },
+    "appId": null,
+    "orgId": null,
+    "layers": {}
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/todo-management-infra/dev/1773992723912-2026-03-20T07:45:23.912Z",
+    "artifact": ""
+  }
+}

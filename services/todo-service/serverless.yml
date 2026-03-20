@@ -1,0 +1,74 @@
+service: todo-service
+
+frameworkVersion: '4'
+useDotenv: true
+
+custom:
+  stage: ${opt:stage, env:STAGE, 'dev'}
+  region: ${opt:region, env:AWS_REGION, 'ap-south-1'}
+  infraStackName: todo-management-infra-${self:custom.stage}
+  todoEventBusArn: ${cf:${self:custom.infraStackName}.TodoEventBusArn}
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${self:custom.stage}
+  region: ${self:custom.region}
+  environment:
+    LOG_LEVEL: ${env:LOG_LEVEL, 'INFO'}
+    TODOS_TABLE: ${cf:${self:custom.infraStackName}.TodosTableName}
+    TODO_EVENT_BUS_NAME: ${cf:${self:custom.infraStackName}.TodoEventBusName}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:Scan
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${cf:${self:custom.infraStackName}.TodosTableName}
+
+        - Effect: Allow
+          Action:
+            - events:PutEvents
+          Resource:
+            - ${self:custom.todoEventBusArn}
+
+functions:
+  createTodo:
+    handler: src/handlers/createTodo.handler
+    events:
+      - httpApi:
+          path: /todos
+          method: post
+
+  listTodos:
+    handler: src/handlers/listTodos.handler
+    events:
+      - httpApi:
+          path: /todos
+          method: get
+
+  getTodo:
+    handler: src/handlers/getTodo.handler
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: get
+
+  updateTodo:
+    handler: src/handlers/updateTodo.handler
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: put
+
+  deleteTodo:
+    handler: src/handlers/deleteTodo.handler
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: delete

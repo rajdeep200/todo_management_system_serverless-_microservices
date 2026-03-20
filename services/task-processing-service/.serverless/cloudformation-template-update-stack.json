@@ -1,0 +1,201 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ProcessTodoLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/task-processing-service-dev-processTodo"
+      }
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "task-processing-service",
+                  "dev",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup",
+                    "logs:TagResource"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/task-processing-service-dev*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/task-processing-service-dev*:*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:GetItem",
+                    "dynamodb:UpdateItem"
+                  ],
+                  "Resource": "arn:aws:dynamodb:ap-south-1:351740701752:table/todo-management-infra-dev-todos"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "events:PutEvents"
+                  ],
+                  "Resource": "arn:aws:events:ap-south-1:351740701752:event-bus/todo-management-infra-dev-event-bus"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:GetQueueAttributes"
+                  ],
+                  "Resource": "arn:aws:sqs:ap-south-1:351740701752:todo-management-infra-dev-task-queue"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:GetQueueAttributes"
+                  ],
+                  "Resource": [
+                    "arn:aws:sqs:ap-south-1:351740701752:todo-management-infra-dev-task-queue"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": {
+          "Fn::Join": [
+            "-",
+            [
+              "task-processing-service",
+              "dev",
+              {
+                "Ref": "AWS::Region"
+              },
+              "lambdaRole"
+            ]
+          ]
+        }
+      }
+    },
+    "ProcessTodoLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+          "S3Key": "serverless/task-processing-service/dev/1773999836265-2026-03-20T09:43:56.265Z/task-processing-service.zip"
+        },
+        "Handler": "src/handlers/processTodo.handler",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "task-processing-service-dev-processTodo",
+        "MemorySize": 1024,
+        "Timeout": 5,
+        "Environment": {
+          "Variables": {
+            "LOG_LEVEL": "INFO",
+            "PROCESSING_DELAY_MS": "2000",
+            "TODOS_TABLE": "todo-management-infra-dev-todos",
+            "TODO_EVENT_BUS_NAME": "todo-management-infra-dev-event-bus",
+            "NODE_OPTIONS": "--enable-source-maps"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ProcessTodoLogGroup"
+      ]
+    },
+    "ProcessTodoLambdaVersion6hiYx9a7mPpPc7c7StGSXIERi2T4VpHqaLdm4VX62cA": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ProcessTodoLambdaFunction"
+        },
+        "CodeSha256": "Eq5muzFQA4/sqBDB2Jtg+WgoeFEBhHzc191t1cuiErE="
+      }
+    },
+    "ProcessTodoEventSourceMappingSQSTodomanagementinfradevtaskqueue": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "DependsOn": [
+        "IamRoleLambdaExecution"
+      ],
+      "Properties": {
+        "BatchSize": 5,
+        "EventSourceArn": "arn:aws:sqs:ap-south-1:351740701752:todo-management-infra-dev-task-queue",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ProcessTodoLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Enabled": true
+      }
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": "serverless-framework-deployments-ap-south-1-d6d50141-0075",
+      "Export": {
+        "Name": "sls-task-processing-service-dev-ServerlessDeploymentBucketName"
+      }
+    },
+    "ProcessTodoLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ProcessTodoLambdaVersion6hiYx9a7mPpPc7c7StGSXIERi2T4VpHqaLdm4VX62cA"
+      },
+      "Export": {
+        "Name": "sls-task-processing-service-dev-ProcessTodoLambdaFunctionQualifiedArn"
+      }
+    }
+  }
+}

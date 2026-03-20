@@ -1,0 +1,19 @@
+{
+  "name": "todo-serverless-microservices",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Todo Management System using AWS Serverless Microservices",
+  "workspaces": [
+    "services/*"
+  ],
+  "scripts": {
+    "deploy:infra": "cd infra && npm install && npx serverless deploy",
+    "deploy:todo": "cd services/todo-service && npm install && npx serverless deploy",
+    "deploy:processor": "cd services/task-processing-service && npm install && npx serverless deploy",
+    "deploy:notification": "cd services/notification-service && npm install && npx serverless deploy",
+    "remove:infra": "cd infra && npx serverless remove",
+    "remove:todo": "cd services/todo-service && npx serverless remove",
+    "remove:processor": "cd services/task-processing-service && npx serverless remove",
+    "remove:notification": "cd services/notification-service && npx serverless remove"
+  }
+}
